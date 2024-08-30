@@ -215,7 +215,7 @@ type TransactionMeta struct {
 	Rewards []BlockReward `json:"rewards"`
 
 	LoadedAddresses LoadedAddresses `json:"loadedAddresses"`
-	
+
 	ComputeUnitsConsumed *uint64 `json:"computeUnitsConsumed"`
 }
 
@@ -478,6 +478,10 @@ type ParsedTransactionMeta struct {
 	// Array of string log messages or omitted if log message
 	// recording was not yet enabled during this transaction
 	LogMessages []string `json:"logMessages"`
+
+	Rewards []BlockReward `json:"rewards"`
+
+	ComputeUnitsConsumed *uint64 `json:"computeUnitsConsumed"`
 }
 
 type ParsedInnerInstruction struct {
