@@ -25,9 +25,10 @@ import (
 )
 
 type CreateIdempotent struct {
-	Payer  solana.PublicKey `bin:"-" borsh_skip:"true"`
-	Wallet solana.PublicKey `bin:"-" borsh_skip:"true"`
-	Mint   solana.PublicKey `bin:"-" borsh_skip:"true"`
+	Payer        solana.PublicKey `bin:"-" borsh_skip:"true"`
+	Wallet       solana.PublicKey `bin:"-" borsh_skip:"true"`
+	Mint         solana.PublicKey `bin:"-" borsh_skip:"true"`
+	TokenProgram solana.PublicKey `bin:"-" borsh_skip:"true"`
 
 	// [0] = [WRITE, SIGNER] Payer
 	// ··········· Funding account
@@ -73,12 +74,18 @@ func (inst *CreateIdempotent) SetMint(mint solana.PublicKey) *CreateIdempotent {
 	return inst
 }
 
+func (inst *CreateIdempotent) SetTokenProgram(tokenProgram solana.PublicKey) *CreateIdempotent {
+	inst.TokenProgram = tokenProgram
+	return inst
+}
+
 func (inst CreateIdempotent) Build() *Instruction {
 
 	// Find the associatedTokenAddress;
 	associatedTokenAddress, _, _ := solana.FindAssociatedTokenAddress(
 		inst.Wallet,
 		inst.Mint,
+		inst.TokenProgram,
 	)
 
 	keys := []*solana.AccountMeta{
@@ -108,7 +115,7 @@ func (inst CreateIdempotent) Build() *Instruction {
 			IsWritable: false,
 		},
 		{
-			PublicKey:  solana.TokenProgramID,
+			PublicKey:  inst.TokenProgram,
 			IsSigner:   false,
 			IsWritable: false,
 		},
@@ -147,9 +154,13 @@ func (inst *CreateIdempotent) Validate() error {
 	if inst.Mint.IsZero() {
 		return errors.New("Mint not set")
 	}
+	if inst.TokenProgram.IsZero() {
+		return errors.New("TokenProgram not set")
+	}
 	_, _, err := solana.FindAssociatedTokenAddress(
 		inst.Wallet,
 		inst.Mint,
+		inst.TokenProgram,
 	)
 	if err != nil {
 		return fmt.Errorf("error while FindAssociatedTokenAddress: %w", err)
@@ -194,9 +205,11 @@ func NewCreateIdempotentInstruction(
 	payer solana.PublicKey,
 	walletAddress solana.PublicKey,
 	splTokenMintAddress solana.PublicKey,
+	tokenProgram solana.PublicKey,
 ) *CreateIdempotent {
 	return NewCreateIdempotentInstructionBuilder().
 		SetPayer(payer).
 		SetWallet(walletAddress).
-		SetMint(splTokenMintAddress)
+		SetMint(splTokenMintAddress).
+		SetTokenProgram(tokenProgram)
 }
