@@ -63,6 +63,11 @@ type GetBlockOpts struct {
 	MaxSupportedTransactionVersion *uint64
 }
 
+var (
+	MaxSupportedTransactionVersion0 uint64 = 0
+	MaxSupportedTransactionVersion1 uint64 = 1
+)
+
 // GetBlock returns identity and transaction information about a confirmed block in the ledger.
 func (cl *Client) GetBlock(
 	ctx context.Context,
@@ -84,7 +89,6 @@ func (cl *Client) GetBlockWithOpts(
 	slot uint64,
 	opts *GetBlockOpts,
 ) (out *GetBlockResult, err error) {
-
 	obj := M{
 		"encoding": solana.EncodingBase64,
 	}
@@ -121,7 +125,6 @@ func (cl *Client) GetBlockWithOpts(
 	params := []interface{}{slot, obj}
 
 	err = cl.rpcClient.CallForInto(ctx, &out, "getBlock", params)
-
 	if err != nil {
 		return nil, err
 	}
@@ -160,6 +163,10 @@ type GetBlockResult struct {
 
 	// The number of blocks beneath this block.
 	BlockHeight *uint64 `json:"blockHeight"`
+
+	// The number of reward partitions.
+	// Present for the first block in the epoch otherwise Nil.
+	NumRewardPartitions *uint64 `json:"numRewardPartitions"`
 }
 
 func (cl *Client) GetParsedBlockWithOpts(
@@ -167,7 +174,6 @@ func (cl *Client) GetParsedBlockWithOpts(
 	slot uint64,
 	opts *GetBlockOpts,
 ) (out *GetParsedBlockResult, err error) {
-
 	obj := M{
 		"encoding": solana.EncodingJSONParsed,
 	}
@@ -190,7 +196,6 @@ func (cl *Client) GetParsedBlockWithOpts(
 	params := []interface{}{slot, obj}
 
 	err = cl.rpcClient.CallForInto(ctx, &out, "getBlock", params)
-
 	if err != nil {
 		return nil, err
 	}
@@ -229,6 +234,10 @@ type GetParsedBlockResult struct {
 
 	// The number of blocks beneath this block.
 	BlockHeight *uint64 `json:"blockHeight"`
+
+	// The number of reward partitions.
+	// Present for the first block in the epoch otherwise Nil.
+	NumRewardPartitions *uint64 `json:"numRewardPartitions"`
 }
 
 type ParsedTransactionWithMeta struct {
